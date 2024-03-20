@@ -28,6 +28,8 @@ module org.jboss.modules {
   exports org.jboss.modules.ref;
   exports org.jboss.modules.security;
   exports org.jboss.modules.xml;
+  uses java.net.URLStreamHandlerFactory;
+  uses java.net.spi.URLStreamHandlerProvider;
   uses java.util.logging.LogManager;
   uses java.util.prefs.PreferencesFactory;
   uses javax.management.MBeanServerBuilder;
