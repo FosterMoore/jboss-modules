@@ -113,7 +113,7 @@ public final class Module {
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
             public Void run() {
                 try {
-                    URL.setURLStreamHandlerFactory(ModularURLStreamHandlerFactory.INSTANCE);
+                    URL.setURLStreamHandlerFactory(ModularURLStreamHandlerProvider.INSTANCE);
                 } catch (Throwable t) {
                     // todo log a warning or something
                 }
@@ -212,7 +212,6 @@ public final class Module {
     private static final RuntimePermission ACCESS_MODULE_LOGGER;
     private static final RuntimePermission ADD_CONTENT_HANDLER_FACTORY;
     private static final RuntimePermission ADD_URL_STREAM_HANDLER_FACTORY;
-
     private static final PermissionCollection NO_PERMISSIONS = noPermissions();
 
     /**
@@ -1223,7 +1222,7 @@ public final class Module {
         if (sm != null) {
             sm.checkPermission(ADD_URL_STREAM_HANDLER_FACTORY);
         }
-        ModularURLStreamHandlerFactory.addHandlerModule(module);
+        ModularURLStreamHandlerProvider.addHandlerModule(module);
     }
 
     /**

@@ -20,6 +20,7 @@ package org.jboss.modules;
 
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+import java.net.spi.URLStreamHandlerProvider;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-final class ModularURLStreamHandlerFactory implements URLStreamHandlerFactory {
+final class ModularURLStreamHandlerProvider extends URLStreamHandlerProvider {
     private static final PrivilegedAction<String> URL_MODULES_LIST_ACTION = new PropertyReadAction("jboss.protocol.handler.modules");
 
     private static final List<Module> modules;
@@ -71,33 +72,39 @@ final class ModularURLStreamHandlerFactory implements URLStreamHandlerFactory {
         modules = list;
     }
 
-    static final ModularURLStreamHandlerFactory INSTANCE = new ModularURLStreamHandlerFactory();
+    static final ModularURLStreamHandlerProvider INSTANCE = new ModularURLStreamHandlerProvider();
 
     static void addHandlerModule(Module module) {
         modules.add(module);
     }
 
-    private ModularURLStreamHandlerFactory() {
+    private ModularURLStreamHandlerProvider() {
     }
 
     private URLStreamHandler locateHandler(final String protocol) {
+        URLStreamHandler handler;
         for (Module module : modules) {
-            ServiceLoader<URLStreamHandlerFactory> loader = module.loadService(URLStreamHandlerFactory.class);
-            for (URLStreamHandlerFactory factory : loader) {
-                try {
-                    final URLStreamHandler handler = factory.createURLStreamHandler(protocol);
-                    if (handler != null) {
-                        return handler;
-                    }
-                } catch (RuntimeException e) {
-                    // ignored
+            handler = loadService(protocol, module, URLStreamHandlerProvider.class);
+            if (handler != null) return handler;
+            // backward compatibility
+            handler = loadService(protocol, module, URLStreamHandlerFactory.class);
+            if (handler != null) return handler;
+        }
+        return "data".equals(protocol) ? DataURLStreamHandler.getInstance() : null;
+    }
+
+    private static <T extends URLStreamHandlerFactory> URLStreamHandler loadService(final String protocol, final Module module, final Class<T> providerType) {
+        final ServiceLoader<T> loader = module.loadService(providerType);
+        for (URLStreamHandlerFactory factory : loader) {
+            try {
+                final URLStreamHandler handler = factory.createURLStreamHandler(protocol);
+                if (handler != null) {
+                    return handler;
                 }
+            } catch (RuntimeException e) {
+                // ignored
             }
         }
-        if (protocol.equals("data")) {
-            return DataURLStreamHandler.getInstance();
-        }
-
         return null;
     }
 
