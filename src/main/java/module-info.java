@@ -17,11 +17,9 @@
  */
 
 module org.jboss.modules {
-  requires java.desktop;
-  requires java.instrument;
-  requires java.logging;
-  requires java.management;
-  requires java.prefs;
+  // for consumers of this module
+  requires java.se;
+  requires jdk.unsupported;
   exports org.jboss.modules;
   exports org.jboss.modules.filter;
   exports org.jboss.modules.log;
@@ -35,6 +33,7 @@ module org.jboss.modules {
   uses javax.management.MBeanServerBuilder;
   uses java.lang.SecurityManager;
   uses java.security.Provider;
+  uses java.security.Policy;
   uses org.jboss.modules.PreMain;
   uses System.LoggerFinder;
 }
