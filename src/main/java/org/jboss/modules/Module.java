@@ -335,7 +335,7 @@ public final class Module {
             } catch (Throwable t) {
                 throw new InvocationTargetException(t, "Failed to initialize main class '" + className + "'");
             }
-            final MethodHandles.Lookup lookup = MethodHandles.lookup();
+            final MethodHandles.Lookup lookup = MethodHandles.publicLookup();
             final MethodHandle methodHandle;
             try {
                 methodHandle = lookup.findStatic(mainClass, "main", MAIN_METHOD_TYPE);
@@ -378,6 +378,7 @@ public final class Module {
      * @return the service loader
      */
     public <S> ServiceLoader<S> loadService(Class<S> serviceType) {
+        getClass().getModule().addUses(serviceType);
         return ServiceLoader.load(serviceType, moduleClassLoader);
     }
 
@@ -389,6 +390,7 @@ public final class Module {
      * @return the service loader
      */
     public <S> ServiceLoader<S> loadServiceDirectly(Class<S> serviceType) {
+        getClass().getModule().addUses(serviceType);
         return ServiceLoader.load(serviceType, new ClassLoader(null) {
             public Enumeration<URL> getResources(final String name) throws IOException {
                 final Enumeration<Resource> resourceEnumeration = Collections.enumeration(getClassLoader().getLocalLoader().loadResourceLocal(name));

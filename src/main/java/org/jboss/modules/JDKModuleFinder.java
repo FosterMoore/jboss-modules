@@ -43,7 +43,16 @@ public final class JDKModuleFinder implements IterableModuleFinder {
     private static final JDKModuleFinder INSTANCE = new JDKModuleFinder();
 
     private JDKModuleFinder() {
-        this.layer = ModuleLayer.boot();
+        ModuleLayer layer;
+        if (JDKModuleFinder.class.getModule().isNamed()) {
+            layer = JDKModuleFinder.class.getModule().getLayer();
+            if (layer == null) {
+                layer = ModuleLayer.boot();
+            }
+        } else {
+            layer = ModuleLayer.boot();
+        }
+        this.layer = layer;
     }
 
     public static JDKModuleFinder getInstance() {
@@ -67,18 +76,19 @@ public final class JDKModuleFinder implements IterableModuleFinder {
 
         final Set<String> packages;
         final Module module;
-        if ("org.jboss.modules".equals(name)) {
-            module = getClass().getModule();
-            if (module.isNamed()) {
-                packages = module.getPackages();
+        final Optional<Module> moduleOptional = layer.findModule(name);
+        if (moduleOptional.isEmpty()) {
+            if ("org.jboss.modules".equals(name)) {
+                module = getClass().getModule();
+                if (module.isNamed()) {
+                    packages = module.getPackages();
+                } else {
+                    packages = Utils.MODULES_PACKAGES;
+                }
             } else {
-                packages = Utils.MODULES_PACKAGES;
-            }
-        } else {
-            final Optional<Module> moduleOptional = layer.findModule(name);
-            if (! moduleOptional.isPresent()) {
                 return null;
             }
+        } else {
             module = moduleOptional.get();
             packages = module.getPackages();
         }
