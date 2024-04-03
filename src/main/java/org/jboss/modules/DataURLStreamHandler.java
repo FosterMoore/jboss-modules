@@ -136,7 +136,7 @@ final class DataURLStreamHandler extends URLStreamHandler {
                         if (i - paramStart == 6 && urlString.regionMatches(true, paramStart, "base64", 0, 6)) {
                             base64 = true;
                         } else {
-                            contentTypeBuilder.append(';').append(urlString.substring(paramStart, i));
+                            contentTypeBuilder.append(';').append(urlString, paramStart, i);
                         }
                         if (cp == ',') {
                             text = contentTypeBuilder.lastIndexOf("text/", 5) != -1;
@@ -174,7 +174,7 @@ final class DataURLStreamHandler extends URLStreamHandler {
                             }
                             charsetName = value;
                         } else {
-                            contentTypeBuilder.append(urlString.substring(paramStart, i));
+                            contentTypeBuilder.append(urlString, paramStart, i);
                         }
                         if (cp == ',') {
                             text = contentTypeBuilder.lastIndexOf("text/", 5) != -1;
@@ -209,11 +209,11 @@ final class DataURLStreamHandler extends URLStreamHandler {
                 }
             } else {
                 if (text) {
-                    str = URLDecoder.decode(urlString.substring(content), charset.name());
+                    str = URLDecoder.decode(urlString.substring(content), charset);
                     bytes = str.getBytes(charset);
                 } else {
                     // this is a bit hacky...
-                    bytes = URLDecoder.decode(urlString.substring(content), StandardCharsets.ISO_8859_1.name()).getBytes(StandardCharsets.ISO_8859_1);
+                    bytes = URLDecoder.decode(urlString.substring(content), StandardCharsets.ISO_8859_1).getBytes(StandardCharsets.ISO_8859_1);
                     str = null;
                 }
             }
