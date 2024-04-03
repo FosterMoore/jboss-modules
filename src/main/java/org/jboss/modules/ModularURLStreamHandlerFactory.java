@@ -115,6 +115,10 @@ final class ModularURLStreamHandlerFactory implements URLStreamHandlerFactory {
                 });
             } finally {
                 set.remove(protocol);
+                if (set.isEmpty()) {
+                    // avoid leaking thread-locals
+                    reentered.remove();
+                }
             }
         }
         return null;
