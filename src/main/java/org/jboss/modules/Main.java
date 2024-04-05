@@ -367,7 +367,7 @@ public final class Main {
             System.exit(1);
         }
 
-        ModularURLStreamHandlerFactory.addHandlerModule(module);
+        ModularURLStreamHandlerProvider.addHandlerModule(module);
         ModularContentHandlerFactory.addHandlerModule(module);
 
         // at this point, having a security manager already installed will prevent correct operation.
