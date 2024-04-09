@@ -23,5 +23,4 @@
  * @deprecated Use {@link java.lang.ref.Cleaner} or one of the reference types from a support library such as
  *      {@code io.smallrye.common:smallrye-common-ref} instead.
  */
-@Deprecated
 package org.jboss.modules.ref;
