@@ -399,7 +399,7 @@ public final class Main {
                 System.exit(1);
                 return;
             }
-            final Iterator<SecurityManager> iterator = ServiceLoader.load(SecurityManager.class, loadedModule.getClassLoaderPrivate()).iterator();
+            final Iterator<SecurityManager> iterator = loadedModule.loadService(SecurityManager.class).iterator();
             if (iterator.hasNext()) {
                 System.setSecurityManager(iterator.next());
             } else {
@@ -558,9 +558,8 @@ public final class Main {
                     Module.getModuleLogger().trace(e, "Failed to initialize a security provider");
                 }
             } else {
-                final ModuleClassLoader classLoader = environmentLoader.loadModule(addedProvider).getClassLoaderPrivate();
-                final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class, classLoader);
-                final Iterator<Provider> iterator = providerServiceLoader.iterator();
+                final Module providerModule = environmentLoader.loadModule(addedProvider);
+                final Iterator<Provider> iterator = providerModule.loadService(Provider.class).iterator();
                 for (;;) try {
                     if (! (iterator.hasNext())) {
                         Module.getModuleLogger().trace("Module \"%s\" did not contain a security provider service", addedProvider);
@@ -576,8 +575,7 @@ public final class Main {
             }
         }
 
-        final ServiceLoader<Provider> providerServiceLoader = ServiceLoader.load(Provider.class, bootClassLoader);
-        Iterator<Provider> iterator = providerServiceLoader.iterator();
+        final Iterator<Provider> iterator = module.loadService(Provider.class).iterator();
         for (;;) try {
             if (! (iterator.hasNext())) break;
             final Provider provider = iterator.next();
@@ -593,8 +591,7 @@ public final class Main {
         final ArrayList<String> argsList = new ArrayList<>(moduleArgs.length);
         Collections.addAll(argsList, moduleArgs);
 
-        final ServiceLoader<PreMain> preMainServiceLoader = ServiceLoader.load(PreMain.class, bootClassLoader);
-        for (PreMain preMain : preMainServiceLoader) {
+        for (PreMain preMain : module.loadService(PreMain.class)) {
             preMain.run(argsList);
         }
 
