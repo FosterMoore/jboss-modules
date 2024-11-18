@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.security.PermissionCollection;
 import java.security.ProtectionDomain;
+import java.text.Collator;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * A module classloader.  Instances of this class implement the complete view of classes and resources available in a
@@ -251,7 +253,11 @@ public class ModuleClassLoader extends ConcurrentClassLoader {
         log.trace("Loading class %s locally from %s", className, module);
 
         String pathOfClass = Module.pathOfClass(className);
-        final List<ResourceLoader> loaders = paths.get(pathOfClass);
+        Collator c = Collator.getInstance();
+        final List<ResourceLoader> loaders = paths.get(pathOfClass).stream().sorted((o1, o2) -> {
+            return c.compare(o2.getRootName(),o1.getRootName()); //reverse ordering for a second
+         }).collect(Collectors.toList());
+
         if (loaders == null) {
             // no loaders for this path
             return null;
